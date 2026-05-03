@@ -73,7 +73,6 @@ terminal(command="~/.opencode/bin/opencode run 'Add error handling to all API ca
 | `-s, --session` | Resume specific session ID |
 | `--fork` | Fork session when continuing |
 | `--share` | Share the session |
-| `--pure` | Run without external plugins (faster startup, eliminates plugin errors) |
 
 ### Mode 2: Interactive TUI via tmux — Multi-Turn Sessions
 
@@ -284,7 +283,7 @@ terminal(command="~/.opencode/bin/opencode session delete <sessionID>")
 terminal(command="~/.opencode/bin/opencode export <sessionID> --sanitize > /tmp/session.json")
 ```
 
-**Critical:** `opencode export` prepends a log line (`Exporting session: ses_xxx`) before the JSON. Strip it before parsing:
+**Pitfall:** `opencode export` prepends a log line before the JSON. Strip it before parsing:
 ```
 terminal(command="~/.opencode/bin/opencode export <sessionID> --sanitize | tail -n +2 | jq '.info.id'")
 ```
@@ -435,13 +434,6 @@ terminal(command="~/.opencode/bin/opencode debug agent build")
 ### Database Query
 ```
 terminal(command="~/.opencode/bin/opencode db 'SELECT * FROM sessions LIMIT 5' --format json")
-```
-
-### Debug Without Plugins
-Use `--pure` on any command to bypass external plugins. This eliminates plugin-related startup errors and reduces startup time:
-```
-terminal(command="~/.opencode/bin/opencode run 'Task' --pure --format json --dangerously-skip-permissions")
-terminal(command="~/.opencode/bin/opencode debug config --pure")
 ```
 
 ## Pitfalls & Gotchas
