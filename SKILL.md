@@ -1,7 +1,7 @@
 ---
 name: opencode
 description: "Delegate coding tasks to OpenCode CLI (autonomous AI coding agent)."
-version: 1.0.0
+version: 2.0.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -258,7 +258,7 @@ terminal(command="~/.opencode/bin/opencode run 'Task' -m opencode-go/kimi-k2.6 -
 **Common providers:**
 | Provider | Example Model |
 |----------|---------------|
-| `opencode-go` | `opencode-go/kimi-k2.6`, `opencode-go/deepseek-v4-pro` |
+| `opencode-go` | `opencode-go/kimi-k2.6` (DEFAULT, 262K cap), `opencode-go/deepseek-v4-pro` |
 | `anthropic` | `anthropic/claude-sonnet-4-6`, `anthropic/claude-opus-4-6` |
 | `openai` | `openai/gpt-5`, `openai/gpt-4o` |
 | `azure` | `azure/gpt-4o`, `azure/claude-sonnet-4-6` |
@@ -360,22 +360,31 @@ terminal(command="~/.opencode/bin/opencode mcp auth <name>")
 terminal(command="~/.opencode/bin/opencode mcp debug <name>")
 ```
 
-## Parallel OpenCode Instances
+## Parallel OpenCode Instances (Native Delegation)
 
-Run multiple independent tasks simultaneously:
+Instead of using raw `tmux` to manage multiple instances, prefer using Hermes' native `delegate_task` tool to spawn isolated subagents that run OpenCode independently. This avoids terminal multiplexing headaches and keeps output structured.
 
+```json
+{
+  "tasks": [
+    {
+      "goal": "Fix the auth bug in src/auth.py using OpenCode",
+      "context": "Use terminal to run: ~/.opencode/bin/opencode run 'Fix auth bug' --format json --dangerously-skip-permissions",
+      "toolsets": ["terminal"]
+    },
+    {
+      "goal": "Write integration tests for API endpoints using OpenCode",
+      "context": "Use terminal to run: ~/.opencode/bin/opencode run 'Write tests' --format json --dangerously-skip-permissions",
+      "toolsets": ["terminal"]
+    }
+  ]
+}
 ```
-# Task 1: Fix backend
+
+If you absolutely must orchestrate without subagents, use `tmux`:
+```bash
+# Task 1 via tmux
 terminal(command="tmux new-session -d -s task1 -x 140 -y 40 && tmux send-keys -t task1 'cd ~/project && ~/.opencode/bin/opencode run \"Fix the auth bug in src/auth.py\" --format json --dangerously-skip-permissions' Enter")
-
-# Task 2: Write tests
-terminal(command="tmux new-session -d -s task2 -x 140 -y 40 && tmux send-keys -t task2 'cd ~/project && ~/.opencode/bin/opencode run \"Write integration tests for the API endpoints\" --format json --dangerously-skip-permissions' Enter")
-
-# Task 3: Update docs
-terminal(command="tmux new-session -d -s task3 -x 140 -y 40 && tmux send-keys -t task3 'cd ~/project && ~/.opencode/bin/opencode run \"Update README.md with the new API endpoints\" --format json --dangerously-skip-permissions' Enter")
-
-# Monitor all
-terminal(command="sleep 30 && for s in task1 task2 task3; do echo '=== '$s' ==='; tmux capture-pane -t $s -p -S -5 2>/dev/null; done")
 ```
 
 ## Cost & Performance Tracking
@@ -451,6 +460,8 @@ terminal(command="~/.opencode/bin/opencode db 'SELECT * FROM sessions LIMIT 5' -
 11. **`opencode pr` checks out the branch** — it modifies your working directory.
 12. **ACP server defaults to random port** — specify `--port` if you need a fixed endpoint.
 13. **`opencode export` prepends a log line** — output starts with `Exporting session: ses_xxx\n` before the JSON body. Pipe through `tail -n +2` before `jq`.
+14. **Context Window Cap on kimi-k2.6** — The `opencode-go/kimi-k2.6` model has an empirically confirmed hard context cap at 262K tokens. If your project approaches this limit, it will crash or fail to ingest new files.
+15. **Context Compression** — If you are hitting the 262K token limit, use `opencode run --agent compaction "Compact the current context"` before issuing large queries, or break tasks into smaller isolated `opencode run` commands instead of long-running interactive sessions.
 
 ## Rules for Hermes Agents
 

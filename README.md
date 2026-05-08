@@ -1,4 +1,4 @@
-# OpenCode Skill for Hermes
+# OpenCode Skill for Hermes (v2)
 
 A Hermes skill for delegating coding tasks to [OpenCode](https://opencode.ai), the autonomous AI coding agent CLI. This skill enables Hermes agents to orchestrate OpenCode in print mode, interactive TUI sessions, ACP server mode, and headless server mode.
 
@@ -10,6 +10,8 @@ A Hermes skill for delegating coding tasks to [OpenCode](https://opencode.ai), t
 - **Multi-provider support** — OpenAI, Anthropic, Azure, Vercel AI Gateway, GitHub Copilot, Google, Perplexity, OpenCode Go
 - **Session management** — resume, fork, export, import
 - **GitHub workflow** — PR checkout and review via `opencode pr`
+- **Native subagent delegation** — integration with Hermes `delegate_task` for parallel execution
+- **Context management** — explicit handling of the 262K token context cap for models like `kimi-k2.6`
 
 ## Installation
 
